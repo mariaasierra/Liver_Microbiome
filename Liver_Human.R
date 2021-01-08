@@ -1,9 +1,7 @@
 ## Liver and Gut Human Data 
 # Script Maria A Sierra - 2019
-setwd("~/Desktop/Maria/QIIME/Josh_Human/R_inputs/")
-setwd("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/R_inputs")
 
-source("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
+source("~/Data/microbiome_functions.R")
 library(phyloseq) #V1.27.0
 library(ggplot2)
 library(plyr)
@@ -20,7 +18,7 @@ library(metagMisc)
 library(PhyloMeasures)
 
 #Import files 
-human_phylo <- import_data("otu_table_nochimera.json.biom", mapping = "mapping_file.txt", tree = "rep_set_chimerafree.tre")
+human_phylo <- import_data("Data/otu_table_nochimera_human.biom", mapping = "Data/mapping_file_human.txt", tree = "Data/rep_set_chimerafree_human.tre")
 metadata<-data.frame(sample_data(human_phylo))
 tax<-data.frame(tax_table(human_phylo))
 newhuman_phylo = subset_samples(human_phylo, SampleID != "PL16" & SampleID != "PF16")
@@ -111,5 +109,8 @@ plot_ordination(newhuman_phylo, ord, type = "samples", color = "Description") +
   scale_color_manual(values = c("red", "blue")) +
   annotate("text", x = -0.30, y = -0.39 ,
            label = "paste(italic(p), \" = 0.001\")", parse = TRUE, size=10)
+
+
+
 
 
