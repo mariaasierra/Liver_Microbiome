@@ -1,5 +1,5 @@
-
-source("~/Data/microbiome_functions.R")
+setwd("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Box6/")
+source("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
 
 #Beta Diverstiy Antibiotics Suppl Fig S3
 phylo <- import_data("Data/otu_table_abx.biom", mapping = "Data/mapping_file_abx.txt", tree = "Data/rep_set_filtered_abx.tre")
@@ -75,3 +75,108 @@ plot_ordination(Multi_Anti, ord, type = "samples", color = "SampleType") +
   geom_point(size = 5,shape = 20) + stat_ellipse() + default.theme + theme(axis.text = element_text(size = 20), axis.title = element_text(size = 17)) +
   scale_color_manual(values = c("red", "blue"))
 dev.off()
+
+#Rel Abundance Antibiotics groups
+# Subset data
+control <- subset_samples(phylo, Description == "Control")
+control <- prune_taxa(taxa_sums(control) > 0, control)
+sample_data(control)
+
+gut <- subset_samples(phylo, SampleType == "Gut")
+gut <- prune_taxa(taxa_sums(gut) > 0, gut)
+
+liver <- subset_samples(phylo, SampleType == "Liver")
+liver <- prune_taxa(taxa_sums(liver) > 0, liver)
+
+
+control <- subset_samples(control, Description != "Multi_Anti")
+control <- prune_taxa(taxa_sums(control) > 0, control)
+
+
+glomrank <- "Phylum"
+gut.glom <- tax_glom(gut, glomrank)
+gut.glom.norm <- transform_sample_counts(gut.glom, function(x) x/sum(x))
+gut.glom.md <- psmelt(gut.glom.norm)
+gut.glom.dat <- ddply(gut.glom.md, c("Description", "Phylum"),
+                      summarise,
+                      mean = mean(Abundance), sd = sd(Abundance),
+                      N = length(Abundance), se = sd/sqrt(N))
+ggplot(gut.glom.dat, aes(x= reorder(Phylum, -mean), y = mean, group = Description, fill = Description)) +
+  geom_bar(stat = "identity", position = "dodge", width = .5, colour = "black") +
+  geom_errorbar(aes(ymin = mean, ymax = mean + se), 
+                stat = "identity", 
+                position = position_dodge(.5), width = .1) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Phylum",y = "Relative Abundance") +
+  scale_fill_brewer(palette = "Set1", "") +
+  default.theme + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        legend.text = element_text(size = 8))
+
+groups <- unique(as.character(gut.glom.md$Description))
+gut.phyla <- unique(as.character(gut.glom.md$Phylum))
+
+gut.pvalue <- data.frame(t(combn(groups, 2)), stringsAsFactors = FALSE)
+colnames(gut.pvalue) <- c("Group1", "Group2")
+gut.pvalue <- data.frame(gut.pvalue,Phylum=rep(gut.phyla,each=nrow(gut.pvalue)),
+                         pvalue = 0)
+
+
+for(i in rownames(gut.pvalue)){
+  group1 <- gut.pvalue[i, "Group1"]
+  group2 <- gut.pvalue[i, "Group2"]
+  wil <- wilcox.test(Abundance~Description, 
+                     data = gut.glom.md,
+                     subset = Description %in% c(group1, group2) &
+                       Phylum == gut.pvalue[i, "Phylum"])
+  gut.pvalue[i, "pvalue"] <- wil$p.value
+} 
+
+
+liver.glom <- tax_glom(liver, glomrank)
+liver.glom.norm <- transform_sample_counts(liver.glom, function(x) x/sum(x))
+liver.glom.md <- psmelt(liver.glom.norm)
+liver.glom.dat <- ddply(liver.glom.md, c("Description", "Phylum"),
+                        summarise,
+                        mean = mean(Abundance), sd = sd(Abundance),
+                        N = length(Abundance), se = sd/sqrt(N))
+ggplot(liver.glom.dat, aes(x= reorder(Phylum, -mean), y = mean, group = Description, fill = Description)) +
+  geom_bar(stat = "identity", position = "dodge", width = .5, colour = "black") +
+  geom_errorbar(aes(ymin = mean, ymax = mean + se), 
+                stat = "identity", 
+                position = position_dodge(.5), width = .1) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Phylum",y = "Relative Abundance") +
+  scale_fill_brewer(palette = "Set1", "") +
+  default.theme + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        legend.text = element_text(size = 8))
+
+liver.phyla <- unique(as.character(liver.glom.md$Phylum))
+
+liver.pvalue <- data.frame(t(combn(groups, 2)), stringsAsFactors = FALSE)
+colnames(liver.pvalue) <- c("Group1", "Group2")
+liver.pvalue <- data.frame(liver.pvalue,Phylum=rep(liver.phyla,each=nrow(liver.pvalue)),
+                           pvalue = 0)
+
+for(i in rownames(liver.pvalue)){
+  group1 <- liver.pvalue[i, "Group1"]
+  group2 <- liver.pvalue[i, "Group2"]
+  wil <- wilcox.test(Abundance~Description, 
+                     data = liver.glom.md,
+                     subset = Description %in% c(group1, group2) &
+                       Phylum == liver.pvalue[i, "Phylum"])
+  liver.pvalue[i, "pvalue"] <- wil$p.value
+} 
+
+
+# Alpha Diversity
+measures <- c("Observed", "ACE", "Chao1", "Shannon", "Simpson")
+plot_richness(control, x = "SampleType", color = "SampleType", measures = measures) +
+  geom_boxplot(width = .5, position = "dodge", size = .8) +
+  default.theme +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.title.x = element_blank(),
+        legend.position = "none",
+        strip.text.x = element_text(size = 8, family = "Arial")) + 
+  labs(x = "", y = "Alpha Diversity")
