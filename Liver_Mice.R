@@ -1,4 +1,4 @@
-#Livar and Gut Data Mice
+#Liver and Gut Data Mice
 
 # Import libraries
 library(phyloseq);packageVersion("phyloseq")	# v1.27.0
@@ -14,8 +14,8 @@ library(reshape2)
 # create plot folder
 path <- "./plot"
 dir.create(path)
-source("~/Data/microbiome_functions.R")
 
+source("~/microbiome_functions.R")
 
 # Define default theme for figures
 default.theme <- theme(axis.title = element_text(size = 12, family = "Arial", 
