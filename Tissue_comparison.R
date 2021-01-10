@@ -1,6 +1,6 @@
 #Tissue Comparison
-setwd("~/Dropbox/Maria_SaxenaLab/Liver_Microbiome_2nd_review/tissue/")
-source("~/Dropbox/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
+source("~/microbiome_functions.R")
+
 library(phyloseq) #V1.27.0
 library(ggplot2)
 library(plyr)
@@ -15,7 +15,7 @@ library(dplyr)
 library(vegan)
 
 #Import files 
-tissue_phylo <- import_data("otu_table_nochimera_tissue.biom", mapping = "metadata_tissue.txt", tree = "rep_set_chimerafree_tissue.tre")
+tissue_phylo <- import_data("Data/otu_table_nochimera_tissue.biom", mapping = "Data/metadata_tissue.txt", tree = "Data/rep_set_chimerafree_tissue.tre")
 metadata<-data.frame(sample_data(tissue_phylo))
 head(metadata)
 tax<-data.frame(tax_table(tissue_phylo))
