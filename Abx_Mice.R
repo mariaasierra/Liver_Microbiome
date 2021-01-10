@@ -1,5 +1,6 @@
-source("~/microbiome_functions.R")
+#Abx Experiment in Mice
 
+source("~/microbiome_functions.R")
 #Beta Diverstiy Antibiotics Suppl Fig S3
 phylo <- import_data("Data/otu_table_abx.biom", mapping = "Data/mapping_file_abx.txt", tree = "Data/rep_set_filtered_abx.tre")
 tax_table(phylo) <- tax_table(phylo)[, ranks]
@@ -81,7 +82,7 @@ control <- subset_samples(phylo, Description == "Control")
 control <- prune_taxa(taxa_sums(control) > 0, control)
 sample_data(control)
 
-gut <- subset_samples(phylo, SampleType == "Gut")
+gut <- subset_samples(phylo, SampleType == "Fecal")
 gut <- prune_taxa(taxa_sums(gut) > 0, gut)
 
 liver <- subset_samples(phylo, SampleType == "Liver")
@@ -91,7 +92,7 @@ liver <- prune_taxa(taxa_sums(liver) > 0, liver)
 control <- subset_samples(control, Description != "Multi_Anti")
 control <- prune_taxa(taxa_sums(control) > 0, control)
 
-
+#Barplot Rel. Abundance
 glomrank <- "Phylum"
 gut.glom <- tax_glom(gut, glomrank)
 gut.glom.norm <- transform_sample_counts(gut.glom, function(x) x/sum(x))
@@ -111,7 +112,6 @@ ggplot(gut.glom.dat, aes(x= reorder(Phylum, -mean), y = mean, group = Descriptio
   default.theme + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         legend.text = element_text(size = 8))
-
 groups <- unique(as.character(gut.glom.md$Description))
 gut.phyla <- unique(as.character(gut.glom.md$Phylum))
 
@@ -168,14 +168,35 @@ for(i in rownames(liver.pvalue)){
   liver.pvalue[i, "pvalue"] <- wil$p.value
 } 
 
+# Remove "Multi_Anti" Group
+liver.alp <- subset_samples(liver, Description != "Multi_Anti")
+liver.alp <- prune_taxa(taxa_sums(liver.alp) > 0, liver.alp)
 
-# Alpha Diversity
+#Alpha diversity indices
+
 measures <- c("Observed", "ACE", "Chao1", "Shannon", "Simpson")
-plot_richness(control, x = "SampleType", color = "SampleType", measures = measures) +
+plot_richness(liver.alp, x = "Description", color = "Description", measures = measures) +
   geom_boxplot(width = .5, position = "dodge", size = .8) +
   default.theme +
   theme(axis.text.x = element_text(angle = 90),
         axis.title.x = element_blank(),
         legend.position = "none",
         strip.text.x = element_text(size = 8, family = "Arial")) + 
-  labs(x = "", y = "Alpha Diversity")
+  labs(x = "", y = "Alpha Diversity") +
+  scale_color_manual(values = brewer.pal(5, "Set1")[-3])
+
+liver.alp.otu <- as(otu_table(liver.alp), "matrix")
+liver.alp.otu <- t(liver.alp.otu)
+liver.alp.meta <- as(sample_data(liver.alp), "data.frame")
+liver.alp.pd <- pd(liver.alp.otu, phy_tree(liver.alp))
+liver.alp.pd$Description <- liver.alp.meta[rownames(liver.alp.pd), "Description"]
+ggplot(liver.alp.pd, aes(x = Description, y = PD, color = Description)) +
+  geom_point() +
+  geom_boxplot(width = .3, position = "dodge", size = .8) + 
+  default.theme +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.title.x = element_blank(),
+        legend.position = "none",
+        strip.text.x = element_text(size = 8, family = "Arial"))+
+  scale_color_manual(values = brewer.pal(5, "Set1")[-3])
+
