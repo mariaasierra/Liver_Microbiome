@@ -1,7 +1,6 @@
 ## Liver and Gut Human Data 
 # Script Maria A Sierra - 2019
-setwd("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/R_inputs")
-source("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
+
 source("~/microbiome_functions.R")
 library(phyloseq) #V1.27.0
 library(ggplot2)
