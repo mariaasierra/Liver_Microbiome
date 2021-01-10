@@ -1,5 +1,4 @@
-setwd("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Box6/")
-source("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
+source("~/microbiome_functions.R")
 
 #Beta Diverstiy Antibiotics Suppl Fig S3
 phylo <- import_data("Data/otu_table_abx.biom", mapping = "Data/mapping_file_abx.txt", tree = "Data/rep_set_filtered_abx.tre")
