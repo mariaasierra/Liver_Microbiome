@@ -14,8 +14,7 @@ library(reshape2)
 # create plot folder
 path <- "./plot"
 dir.create(path)
-setwd("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Box6")
-source("~/Dropbox (Mason Lab)/Maria_SaxenaLab/Liver_QIIME/Josh_Human/microbiome_functions.R")
+source("~/Data/microbiome_functions.R")
 
 
 # Define default theme for figures
